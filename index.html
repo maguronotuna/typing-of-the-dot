@@ -15,7 +15,8 @@
   <div id="resultScreen">
     <h1>ゲーム終了！</h1>
     <p id="finalScore"></p>
-    <button id="closeResult">閉じる</button>
+    <button id="closeResult">タイトル画面に戻る</button>
+    <button id="restartBtn">もう一度プレイ</button>
   </div>
 
   <img src="https://maguronotuna.github.io/typing-of-the-dot/logo.png" alt="Typing of the Dot ロゴ" class="logo">
@@ -26,10 +27,6 @@
   <div id="meaning"></div>
   <input type="text" id="input" placeholder="ここにローマ字で入力..." disabled />
   <div id="result"></div>
-  <div id="controls">
-    <button id="restartBtn" style="display: none;">もう一度プレイ</button>
-    <button id="endBtn" style="display: none;">ゲーム終了</button>
-  </div>
 
   <script>
     let currentWord = "";
@@ -76,10 +73,6 @@
       if (!wordPairs.length) {
         await loadWords();
       }
-      if (!wordPairs.length) {
-        result.textContent = "問題を読み込み中です。少々お待ちください。";
-        return;
-      }
       gameOver = false;
       score = 0;
       timeLeft = 30;
@@ -90,7 +83,6 @@
       timerId = setInterval(updateTimer, 1000);
       waitingScreen.style.display = "none";
       resultScreen.style.display = "none";
-      restartBtn.style.display = "none";
     }
 
     function updateScore() {
@@ -110,7 +102,6 @@
       input.disabled = true;
       finalScore.textContent = `あなたのスコアは ${score} 点です！`;
       resultScreen.style.display = "flex";
-      restartBtn.style.display = "inline-block";
     }
 
     input.addEventListener("input", () => {
@@ -121,7 +112,10 @@
     });
 
     beginGame.onclick = startGame;
-    closeResult.onclick = () => resultScreen.style.display = "none";
+    closeResult.onclick = () => {
+      resultScreen.style.display = "none";
+      waitingScreen.style.display = "flex";
+    };
     restartBtn.onclick = startGame;
 
     window.onload = async () => {
