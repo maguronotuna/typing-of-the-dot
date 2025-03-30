@@ -23,7 +23,7 @@
   <div id="waitingScreen">
     <h1>Typing of the Dot</h1>
     <p class="subtitle">~ Fight the Pixel Undead ~</p>
-    <button id="beginGame">ゲーム開始</button>
+    <button id="beginGame">ゲーム開始（Click or Enter）</button>
   </div>
 
   <div id="resultScreen">
@@ -127,17 +127,6 @@
       }
     });
 
-    beginGame.onclick = startGame;
-    restartBtn.onclick = startGame;
-    endBtn.onclick = endGame;
-    closeResult.onclick = () => resultScreen.style.display = "none";
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && resultScreen.style.display === 'flex') {
-        resultScreen.style.display = 'none';
-      }
-    });
-
     function startGame() {
       gameOver = false;
       score = 0;
@@ -152,6 +141,21 @@
       endBtn.style.display = "inline-block";
       resultScreen.style.display = "none";
     }
+
+    beginGame.onclick = startGame;
+    restartBtn.onclick = startGame;
+    endBtn.onclick = endGame;
+    closeResult.onclick = () => resultScreen.style.display = "none";
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        if (waitingScreen.style.display !== 'none') {
+          startGame();
+        } else if (resultScreen.style.display === 'flex') {
+          resultScreen.style.display = 'none';
+        }
+      }
+    });
   </script>
 </body>
 </html>
