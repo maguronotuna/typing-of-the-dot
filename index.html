@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Typing of the Dot ~ Fight the Pixel Undead ~</title>
+  <style>
+    body { font-family: monospace; background-color: #111; color: #0f0; text-align: center; }
+    #word { font-size: 32px; margin: 20px; }
+    #input { font-size: 24px; padding: 10px; }
+    #result { margin-top: 20px; font-size: 20px; color: #f00; }
+    img.logo { margin-top: 20px; width: 400px; }
+    .subtitle { font-size: 16px; color: #ccc; margin-top: -10px; }
+  </style>
+</head>
+<body>
+  <img src="logo.png" alt="Typing of the Dot ロゴ" class="logo">
+  <div class="subtitle">~ Fight the Pixel Undead ~</div>
+  <div id="word"></div>
+  <input type="text" id="input" placeholder="Type here..." autofocus />
+  <div id="result"></div>
+
+  <script>
+    const words = [
+      "brain", "zombie", "danger", "escape", "infection", "survivor", "nightmare", "virus"
+    ];
+    let currentWord = "";
+
+    const wordDiv = document.getElementById("word");
+    const input = document.getElementById("input");
+    const result = document.getElementById("result");
+
+    function newWord() {
+      currentWord = words[Math.floor(Math.random() * words.length)];
+      wordDiv.textContent = currentWord;
+      input.value = "";
+      result.textContent = "";
+    }
+
+    input.addEventListener("input", () => {
+      if (input.value === currentWord) {
+        result.textContent = "💥 ゾンビ撃退！";
+        setTimeout(newWord, 1000);
+      }
+    });
+
+    newWord();
+  </script>
+</body>
+</html>
