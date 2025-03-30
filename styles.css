@@ -1,0 +1,11 @@
+body {
+  margin: 0;
+  background: #000;
+}
+
+#gameContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* 画面全体の高さを使う */
+}
