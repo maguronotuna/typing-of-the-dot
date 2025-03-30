@@ -3,23 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <title>Typing of the Dot - Phaser版</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js"></script>
 </head>
 <body>
-  <!-- Phaserゲームを表示するコンテナ -->
   <div id="gameContainer"></div>
 
   <script>
     let wordPairs = [];
 
-    // words.jsonから単語リストを非同期で読み込む
     async function loadWords() {
       const res = await fetch('words.json');
       wordPairs = await res.json();
     }
 
-    // タイトルシーン：ゲーム開始前の画面
     class TitleScene extends Phaser.Scene {
       constructor() {
         super('TitleScene');
@@ -35,7 +32,6 @@
       }
     }
 
-    // ゲームシーン：タイピングとタイマー管理
     class GameScene extends Phaser.Scene {
       constructor() {
         super('GameScene');
@@ -56,16 +52,22 @@
         this.scoreText = this.add.text(20, 20, 'スコア: 0', { fontSize: '18px', fill: '#0ff' });
         this.timerText = this.add.text(650, 20, '残り時間: 30秒', { fontSize: '18px', fill: '#ff0' });
 
-        // 1秒ごとにタイマーを更新
+        // ★ 強制終了ボタンの追加 ★
+        this.endText = this.add.text(780, 20, '終了', { fontSize: '18px', fill: '#f00' })
+          .setOrigin(1, 0)
+          .setInteractive();
+
+        this.endText.on('pointerdown', () => {
+          this.scene.start('ResultScene', { score: this.score });
+        });
+
         this.time.addEvent({ delay: 1000, callback: this.updateTimer, callbackScope: this, loop: true });
-        // キーボード入力を監視
         this.input.keyboard.on('keydown', this.handleInput, this);
 
         this.newWord();
       }
 
       newWord() {
-        // 直前の単語と被らないようランダムな単語を選択
         let pair;
         do {
           pair = Phaser.Utils.Array.GetRandom(wordPairs);
@@ -83,24 +85,17 @@
 
         const key = event.key;
 
-        // 制御キーは無視
         if (key === 'Shift' || key === 'Control' || key === 'Alt' || key === 'Meta') return;
-
-        // Backspaceで文字を削除
         if (key === 'Backspace') {
           this.typed = this.typed.slice(0, -1);
           this.inputText.setText(this.typed);
           return;
         }
-
-        // Enterは無視
         if (key === 'Enter') return;
 
-        // 通常の文字入力（小文字に統一）
         this.typed += key.toLowerCase();
         this.inputText.setText(this.typed);
 
-        // 入力が一致すればスコアを更新し、次の単語へ
         if (this.typed === this.currentWord) {
           this.score++;
           this.scoreText.setText(`スコア: ${this.score}`);
@@ -117,7 +112,6 @@
       }
     }
 
-    // リザルトシーン：ゲーム終了時の結果表示
     class ResultScene extends Phaser.Scene {
       constructor() {
         super('ResultScene');
@@ -138,14 +132,13 @@
       }
     }
 
-    // ページ読み込み完了後、単語リストを読み込みPhaserゲームを起動
     window.onload = async () => {
       await loadWords();
       const config = {
         type: Phaser.AUTO,
         width: 800,
         height: 600,
-        parent: 'gameContainer',        // ★中央配置用のコンテナID★
+        parent: 'gameContainer',
         backgroundColor: '#111',
         scene: [TitleScene, GameScene, ResultScene]
       };
