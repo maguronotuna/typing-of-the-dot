@@ -1,127 +1,129 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Typing of the Dot ~ Fight the Pixel Undead ~</title>
-  <link rel="stylesheet" href="https://maguronotuna.github.io/typing-of-the-dot/styles.css">
+  <meta charset="UTF-8" />
+  <title>Typing of the Dot - Phaser版</title>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js"></script>
 </head>
-<body>
-  <div id="waitingScreen">
-    <h1>Typing of the Dot</h1>
-    <p class="subtitle">~ Fight the Pixel Undead ~</p>
-    <button id="beginGame">ゲーム開始</button>
-  </div>
+<body style="margin: 0; background: #000;">
+<script>
+  let wordPairs = [];
 
-  <div id="resultScreen">
-    <h1>ゲーム終了！</h1>
-    <p id="finalScore"></p>
-    <button id="closeResult">タイトル画面に戻る</button>
-    <button id="restartBtn">もう一度プレイ</button>
-  </div>
+  async function loadWords() {
+    const res = await fetch('https://maguronotuna.github.io/typing-of-the-dot/words.json');
+    wordPairs = await res.json();
+  }
 
-  <img src="https://maguronotuna.github.io/typing-of-the-dot/logo.png" alt="Typing of the Dot ロゴ" class="logo">
-  <div class="subtitle">~ Fight the Pixel Undead ~</div>
-  <div id="score">スコア: 0</div>
-  <div id="timer">残り時間: 30秒</div>
-  <div id="word"></div>
-  <div id="meaning"></div>
-  <input type="text" id="input" placeholder="ここにローマ字で入力..." disabled />
-  <div id="result"></div>
+  class TitleScene extends Phaser.Scene {
+    constructor() {
+      super('TitleScene');
+    }
+    create() {
+      this.add.text(400, 200, 'Typing of the Dot', { fontSize: '32px', fill: '#0f0' }).setOrigin(0.5);
+      this.add.text(400, 250, '~ Fight the Pixel Undead ~', { fontSize: '16px', fill: '#ccc' }).setOrigin(0.5);
+      const startText = this.add.text(400, 350, 'ゲーム開始 ▶︎', { fontSize: '24px', fill: '#0ff' }).setOrigin(0.5).setInteractive();
 
-  <script>
-    let currentWord = "";
-    let previousWord = "";
-    let score = 0;
-    let timeLeft = 30;
-    let timerId;
-    let gameOver = false;
-    let wordPairs = [];
+      startText.on('pointerdown', () => {
+        this.scene.start('GameScene');
+      });
+    }
+  }
 
-    const wordDiv = document.getElementById("word");
-    const meaningDiv = document.getElementById("meaning");
-    const input = document.getElementById("input");
-    const result = document.getElementById("result");
-    const scoreDiv = document.getElementById("score");
-    const timerDiv = document.getElementById("timer");
-    const waitingScreen = document.getElementById("waitingScreen");
-    const beginGame = document.getElementById("beginGame");
-    const resultScreen = document.getElementById("resultScreen");
-    const finalScore = document.getElementById("finalScore");
-    const closeResult = document.getElementById("closeResult");
-    const restartBtn = document.getElementById("restartBtn");
-
-    async function loadWords() {
-      const response = await fetch('https://maguronotuna.github.io/typing-of-the-dot/words.json');
-      wordPairs = await response.json();
+  class GameScene extends Phaser.Scene {
+    constructor() {
+      super('GameScene');
     }
 
-    function newWord() {
-      if (!wordPairs.length) return;
+    init() {
+      this.score = 0;
+      this.timeLeft = 30;
+      this.currentWord = '';
+      this.previousWord = '';
+      this.typed = '';
+    }
+
+    create() {
+      this.wordText = this.add.text(400, 200, '', { fontSize: '32px', fill: '#0f0' }).setOrigin(0.5);
+      this.meaningText = this.add.text(400, 250, '', { fontSize: '20px', fill: '#ccc' }).setOrigin(0.5);
+      this.inputText = this.add.text(400, 300, '', { fontSize: '24px', fill: '#fff' }).setOrigin(0.5);
+      this.scoreText = this.add.text(20, 20, 'スコア: 0', { fontSize: '18px', fill: '#0ff' });
+      this.timerText = this.add.text(650, 20, '残り時間: 30秒', { fontSize: '18px', fill: '#ff0' });
+
+      this.time.addEvent({ delay: 1000, callback: this.updateTimer, callbackScope: this, loop: true });
+
+      this.input.keyboard.on('keydown', this.handleInput, this);
+
+      this.newWord();
+    }
+
+    newWord() {
       let pair;
       do {
-        pair = wordPairs[Math.floor(Math.random() * wordPairs.length)];
-      } while (pair.word === previousWord);
-      previousWord = pair.word;
-      currentWord = pair.word;
-      wordDiv.textContent = currentWord;
-      meaningDiv.textContent = `意味: ${pair.meaning}`;
-      input.value = "";
-      result.textContent = "";
+        pair = Phaser.Utils.Array.GetRandom(wordPairs);
+      } while (pair.word === this.previousWord);
+      this.previousWord = pair.word;
+      this.currentWord = pair.word;
+      this.meaningText.setText(`意味: ${pair.meaning}`);
+      this.wordText.setText(this.currentWord);
+      this.typed = '';
+      this.inputText.setText('');
     }
 
-    async function startGame() {
-      if (!wordPairs.length) {
-        await loadWords();
+    handleInput(event) {
+      if (this.timeLeft <= 0) return;
+
+      this.typed += event.key.toLowerCase();
+      this.inputText.setText(this.typed);
+
+      if (this.typed === this.currentWord) {
+        this.score++;
+        this.scoreText.setText(`スコア: ${this.score}`);
+        this.newWord();
       }
-      gameOver = false;
-      score = 0;
-      timeLeft = 30;
-      scoreDiv.textContent = `スコア: ${score}`;
-      input.disabled = false;
-      input.focus();
-      newWord();
-      timerId = setInterval(updateTimer, 1000);
-      waitingScreen.style.display = "none";
-      resultScreen.style.display = "none";
     }
 
-    function updateScore() {
-      score++;
-      scoreDiv.textContent = `スコア: ${score}`;
-    }
-
-    function updateTimer() {
-      timeLeft--;
-      timerDiv.textContent = `残り時間: ${timeLeft}秒`;
-      if (timeLeft <= 0) endGame();
-    }
-
-    function endGame() {
-      clearInterval(timerId);
-      gameOver = true;
-      input.disabled = true;
-      finalScore.textContent = `あなたのスコアは ${score} 点です！`;
-      resultScreen.style.display = "flex";
-    }
-
-    input.addEventListener("input", () => {
-      if (input.value === currentWord && !gameOver) {
-        updateScore();
-        newWord();
+    updateTimer() {
+      this.timeLeft--;
+      this.timerText.setText(`残り時間: ${this.timeLeft}秒`);
+      if (this.timeLeft <= 0) {
+        this.scene.start('ResultScene', { score: this.score });
       }
-    });
+    }
+  }
 
-    beginGame.onclick = startGame;
-    closeResult.onclick = () => {
-      resultScreen.style.display = "none";
-      waitingScreen.style.display = "flex";
-    };
-    restartBtn.onclick = startGame;
+  class ResultScene extends Phaser.Scene {
+    constructor() {
+      super('ResultScene');
+    }
 
-    window.onload = async () => {
-      await loadWords();
-      beginGame.disabled = false;
+    init(data) {
+      this.finalScore = data.score;
+    }
+
+    create() {
+      this.add.text(400, 200, 'ゲーム終了！', { fontSize: '32px', fill: '#f00' }).setOrigin(0.5);
+      this.add.text(400, 250, `あなたのスコアは ${this.finalScore} 点です！`, { fontSize: '24px', fill: '#fff' }).setOrigin(0.5);
+      const restartText = this.add.text(400, 350, 'もう一度 ▶︎', { fontSize: '20px', fill: '#0f0' }).setOrigin(0.5).setInteractive();
+
+      restartText.on('pointerdown', () => {
+        this.scene.start('GameScene');
+      });
+    }
+  }
+
+  window.onload = async () => {
+    await loadWords();
+
+    const config = {
+      type: Phaser.AUTO,
+      width: 800,
+      height: 600,
+      backgroundColor: '#111',
+      scene: [TitleScene, GameScene, ResultScene]
     };
-  </script>
+
+    new Phaser.Game(config);
+  };
+</script>
 </body>
 </html>
