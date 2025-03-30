@@ -3,27 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <title>Typing of the Dot ~ Fight the Pixel Undead ~</title>
-  <style>
-    body { font-family: monospace; background-color: #111; color: #0f0; text-align: center; }
-    #word { font-size: 32px; margin: 20px; }
-    #meaning { font-size: 20px; color: #ccc; margin: 10px 0 20px 0; }
-    #input { font-size: 24px; padding: 10px; }
-    #result { margin-top: 20px; font-size: 20px; color: #f00; }
-    #score { margin-top: 10px; font-size: 20px; color: #0ff; }
-    #timer { font-size: 20px; color: #ff0; margin-top: 10px; }
-    #controls { margin-top: 20px; }
-    #startBtn, #restartBtn, #endBtn { font-size: 18px; padding: 8px 16px; margin: 5px; cursor: pointer; }
-    #waitingScreen, #resultScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #111; color: #0f0; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; }
-    #resultScreen { display: none; }
-    img.logo { margin-top: 20px; width: 400px; }
-    .subtitle { font-size: 16px; color: #ccc; margin-top: -10px; }
-  </style>
+  <link rel="stylesheet" href="https://maguronotuna.github.io/typing-of-the-dot/styles.css">
 </head>
 <body>
   <div id="waitingScreen">
     <h1>Typing of the Dot</h1>
     <p class="subtitle">~ Fight the Pixel Undead ~</p>
-    <button id="beginGame">ゲーム開始（Click or Enter）</button>
+    <button id="beginGame">ゲーム開始</button>
   </div>
 
   <div id="resultScreen">
@@ -47,31 +33,13 @@
   </div>
 
   <script>
-    const wordPairs = [
-      { word: "brain", meaning: "脳" },
-      { word: "zombie", meaning: "ゾンビ" },
-      { word: "danger", meaning: "危険" },
-      { word: "escape", meaning: "脱出" },
-      { word: "infection", meaning: "感染" },
-      { word: "survivor", meaning: "生存者" },
-      { word: "nightmare", meaning: "悪夢" },
-      { word: "virus", meaning: "ウイルス" },
-      { word: "bite", meaning: "噛みつき" },
-      { word: "undead", meaning: "死者の蘇り" },
-      { word: "shelter", meaning: "避難所" },
-      { word: "outbreak", meaning: "発生" },
-      { word: "quarantine", meaning: "隔離" },
-      { word: "panic", meaning: "パニック" },
-      { word: "antidote", meaning: "解毒剤" },
-      { word: "grave", meaning: "墓" },
-      { word: "blood", meaning: "血" }
-    ];
-
     let currentWord = "";
+    let previousWord = "";
     let score = 0;
     let timeLeft = 30;
     let timerId;
     let gameOver = false;
+    let wordPairs = [];
 
     const wordDiv = document.getElementById("word");
     const meaningDiv = document.getElementById("meaning");
@@ -79,22 +47,45 @@
     const result = document.getElementById("result");
     const scoreDiv = document.getElementById("score");
     const timerDiv = document.getElementById("timer");
-    const startBtn = document.getElementById("startBtn");
-    const restartBtn = document.getElementById("restartBtn");
-    const endBtn = document.getElementById("endBtn");
     const waitingScreen = document.getElementById("waitingScreen");
     const beginGame = document.getElementById("beginGame");
     const resultScreen = document.getElementById("resultScreen");
     const finalScore = document.getElementById("finalScore");
     const closeResult = document.getElementById("closeResult");
 
+    async function loadWords() {
+      const response = await fetch('https://maguronotuna.github.io/typing-of-the-dot/words.json');
+      wordPairs = await response.json();
+    }
+
     function newWord() {
-      const pair = wordPairs[Math.floor(Math.random() * wordPairs.length)];
+      if (!wordPairs.length) return;
+      let pair;
+      do {
+        pair = wordPairs[Math.floor(Math.random() * wordPairs.length)];
+      } while (pair.word === previousWord);
+      previousWord = pair.word;
       currentWord = pair.word;
       wordDiv.textContent = currentWord;
       meaningDiv.textContent = `意味: ${pair.meaning}`;
       input.value = "";
       result.textContent = "";
+    }
+
+    async function startGame() {
+      if (!wordPairs.length) {
+        await loadWords();
+      }
+      gameOver = false;
+      score = 0;
+      timeLeft = 30;
+      scoreDiv.textContent = `スコア: ${score}`;
+      input.disabled = false;
+      input.focus();
+      newWord();
+      timerId = setInterval(updateTimer, 1000);
+      waitingScreen.style.display = "none";
+      resultScreen.style.display = "none";
     }
 
     function updateScore() {
@@ -105,17 +96,13 @@
     function updateTimer() {
       timeLeft--;
       timerDiv.textContent = `残り時間: ${timeLeft}秒`;
-      if (timeLeft <= 0) {
-        endGame();
-      }
+      if (timeLeft <= 0) endGame();
     }
 
     function endGame() {
       clearInterval(timerId);
       gameOver = true;
       input.disabled = true;
-      endBtn.style.display = "none";
-      restartBtn.style.display = "inline-block";
       finalScore.textContent = `あなたのスコアは ${score} 点です！`;
       resultScreen.style.display = "flex";
     }
@@ -127,35 +114,10 @@
       }
     });
 
-    function startGame() {
-      gameOver = false;
-      score = 0;
-      timeLeft = 30;
-      scoreDiv.textContent = `スコア: ${score}`;
-      input.disabled = false;
-      input.focus();
-      newWord();
-      timerId = setInterval(updateTimer, 1000);
-      waitingScreen.style.display = "none";
-      restartBtn.style.display = "none";
-      endBtn.style.display = "inline-block";
-      resultScreen.style.display = "none";
-    }
-
     beginGame.onclick = startGame;
-    restartBtn.onclick = startGame;
-    endBtn.onclick = endGame;
     closeResult.onclick = () => resultScreen.style.display = "none";
 
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        if (waitingScreen.style.display !== 'none') {
-          startGame();
-        } else if (resultScreen.style.display === 'flex') {
-          resultScreen.style.display = 'none';
-        }
-      }
-    });
+    window.onload = loadWords;
   </script>
 </body>
 </html>
