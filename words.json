@@ -1,0 +1,19 @@
+[
+  { "word": "brain", "meaning": "脳" },
+  { "word": "zombie", "meaning": "ゾンビ" },
+  { "word": "danger", "meaning": "危険" },
+  { "word": "escape", "meaning": "脱出" },
+  { "word": "infection", "meaning": "感染" },
+  { "word": "survivor", "meaning": "生存者" },
+  { "word": "nightmare", "meaning": "悪夢" },
+  { "word": "virus", "meaning": "ウイルス" },
+  { "word": "bite", "meaning": "噛みつき" },
+  { "word": "undead", "meaning": "死者の蘇り" },
+  { "word": "shelter", "meaning": "避難所" },
+  { "word": "outbreak", "meaning": "発生" },
+  { "word": "quarantine", "meaning": "隔離" },
+  { "word": "panic", "meaning": "パニック" },
+  { "word": "antidote", "meaning": "解毒剤" },
+  { "word": "grave", "meaning": "墓" },
+  { "word": "blood", "meaning": "血" }
+]
