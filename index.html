@@ -76,6 +76,10 @@
       if (!wordPairs.length) {
         await loadWords();
       }
+      if (!wordPairs.length) {
+        result.textContent = "問題を読み込み中です。少々お待ちください。";
+        return;
+      }
       gameOver = false;
       score = 0;
       timeLeft = 30;
@@ -117,7 +121,10 @@
     beginGame.onclick = startGame;
     closeResult.onclick = () => resultScreen.style.display = "none";
 
-    window.onload = loadWords;
+    window.onload = async () => {
+      await loadWords();
+      beginGame.disabled = false;
+    };
   </script>
 </body>
 </html>
