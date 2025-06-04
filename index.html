@@ -225,8 +225,15 @@ class RankingScene extends Phaser.Scene {
   }
 
   async create() {
-    const res = await fetch('/ranking');
-    const ranking = await res.json();
+    let ranking = [];
+    try {
+      const res = await fetch('/ranking');
+      if (res.ok) {
+        ranking = await res.json();
+      }
+    } catch (e) {
+      console.error('Failed to load ranking', e);
+    }
 
     this.add
       .text(440, 60, 'ランキング', { fontSize: '32px', fill: '#0f0' })
