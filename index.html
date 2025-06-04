@@ -30,7 +30,7 @@ class TitleScene extends Phaser.Scene {
       const { width, height } = this.scale;
 
       this.add
-        .image(width / 2, height * 0.25, 'zombieLogo')
+        .image(width / 2, height * 0.35, 'zombieLogo')
         .setScale(0.5);
 
       const best = parseInt(localStorage.getItem('bestScore')) || 0;
