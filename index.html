@@ -1,4 +1,3 @@
-<<<<<<< codex/バグのチェックを行う
 <!DOCTYPE html>
 <html>
 <head>
@@ -204,60 +203,3 @@ class TitleScene extends Phaser.Scene {
   </script>
 </body>
 </html>
-=======
- <!DOCTYPE html>
- <html>
- <head>
-   <meta charset="UTF-8" />
-   <title>Typing of the Dot - Phaser版</title>
-   <link rel="stylesheet" href="styles.css" />
-   <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js"></script>
- </head>
- <body>
-   <div id="gameContainer"></div>
- 
-   <script>
-     let wordPairs = [];
- 
-     // words.json を非同期で読み込み
-     async function loadWords() {
-       const res = await fetch('words.json');
-       wordPairs = await res.json();
-     }
- 
-     // タイトルシーン
-     class TitleScene extends Phaser.Scene {
-       constructor() {
-         super('TitleScene');
-       }
-+      preload() {
-+        this.load.image('zombie', 'logo.png');
-+      }
-       create() {
-+        this.add.image(400, 140, 'zombie').setScale(4);
-         this.add.text(400, 200, 'Typing of the Dot', { fontSize: '32px', fill: '#0f0' }).setOrigin(0.5);
-         this.add.text(400, 250, '~ Fight the Pixel Undead ~', { fontSize: '16px', fill: '#ccc' }).setOrigin(0.5);
- 
-         const best = localStorage.getItem('bestScore') || 0;
-         this.add.text(400, 300, `ベストスコア: ${best}`, { fontSize: '18px', fill: '#ff0' }).setOrigin(0.5);
- 
-         const startText = this.add.text(400, 350, '▶︎ ゲーム開始', { fontSize: '24px', fill: '#0ff' })
-           .setOrigin(0.5)
-           .setInteractive();
- 
-         startText.on('pointerdown', () => {
-           this.scene.start('GameScene');
-         });
-       }
-     }
- 
-     // ゲームシーン
-     class GameScene extends Phaser.Scene {
-       constructor() {
-         super('GameScene');
-       }
- 
-       init() {
-         this.score = 0;
-         this.timeLeft = 30;
->>>>>>> main
