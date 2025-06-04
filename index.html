@@ -196,17 +196,17 @@ class ResultScene extends Phaser.Scene {
       localStorage.setItem('bestScore', this.finalScore);
       this.add.text(440, 330, '新記録！', { fontSize: '18px', fill: '#0ff' }).setOrigin(0.5);
       this.add.text(440, 363, `ベストスコア: ${this.finalScore}`, { fontSize: '18px', fill: '#ff0' }).setOrigin(0.5);
-
-      const name = prompt('名前を入力してください');
-      if (name) {
-        await fetch('/ranking', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, score: this.finalScore })
-        });
-      }
     } else {
       this.add.text(440, 330, `ベストスコア: ${best}`, { fontSize: '18px', fill: '#ff0' }).setOrigin(0.5);
+    }
+
+    const name = prompt('名前を入力してください');
+    if (name) {
+      await fetch('/ranking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, score: this.finalScore })
+      });
     }
 
     const restartText = this.add.text(440, 385, '▶︎ もう一度プレイ', { fontSize: '20px', fill: '#0f0' })
