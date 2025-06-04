@@ -228,14 +228,24 @@ class RankingScene extends Phaser.Scene {
     const res = await fetch('/ranking');
     const ranking = await res.json();
 
-    this.add.text(440, 60, 'ランキング', { fontSize: '32px', fill: '#0f0' }).setOrigin(0.5);
+    this.add
+      .text(440, 60, 'ランキング', { fontSize: '32px', fill: '#0f0' })
+      .setOrigin(0.5);
 
-    ranking.forEach((r, i) => {
-      this.add.text(440, 110 + i * 30, `${i + 1}. ${r.name} - ${r.score}`, {
-        fontSize: '20px',
-        fill: '#fff'
-      }).setOrigin(0.5);
-    });
+    if (ranking.length === 0) {
+      this.add
+        .text(440, 140, 'まだ記録がありません', { fontSize: '20px', fill: '#fff' })
+        .setOrigin(0.5);
+    } else {
+      ranking.forEach((r, i) => {
+        this.add
+          .text(440, 110 + i * 30, `${i + 1}. ${r.name} - ${r.score}`, {
+            fontSize: '20px',
+            fill: '#fff'
+          })
+          .setOrigin(0.5);
+      });
+    }
 
     const backText = this.add.text(440, 420, '戻る', { fontSize: '24px', fill: '#0ff' })
       .setOrigin(0.5)
