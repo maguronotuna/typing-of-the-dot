@@ -1,3 +1,210 @@
+<<<<<<< codex/バグのチェックを行う
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Typing of the Dot - Phaser版</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js"></script>
+</head>
+<body>
+  <div id="gameContainer"></div>
+
+  <script>
+    let wordPairs = [];
+
+    // words.json を非同期で読み込み
+    async function loadWords() {
+      const res = await fetch('words.json');
+      wordPairs = await res.json();
+    }
+
+    // タイトルシーン
+class TitleScene extends Phaser.Scene {
+  constructor() {
+    super('TitleScene');
+  }
+  preload() {
+    this.load.image('zombieLogo', 'logo.png');
+  }
+  create() {
+    this.add.image(400, 140, 'zombieLogo').setScale(4);
+        this.add.text(400, 200, 'Typing of the Dot', { fontSize: '32px', fill: '#0f0' }).setOrigin(0.5);
+        this.add.text(400, 250, '~ Fight the Pixel Undead ~', { fontSize: '16px', fill: '#ccc' }).setOrigin(0.5);
+
+        const best = localStorage.getItem('bestScore') || 0;
+        this.add.text(400, 300, `ベストスコア: ${best}`, { fontSize: '18px', fill: '#ff0' }).setOrigin(0.5);
+
+        const startText = this.add.text(400, 350, '▶︎ ゲーム開始', { fontSize: '24px', fill: '#0ff' })
+          .setOrigin(0.5)
+          .setInteractive();
+
+        startText.on('pointerdown', () => {
+          this.scene.start('GameScene');
+        });
+      }
+    }
+
+    // ゲームシーン
+    class GameScene extends Phaser.Scene {
+      constructor() {
+        super('GameScene');
+      }
+
+      init() {
+        this.score = 0;
+        this.timeLeft = 30;
+        this.currentWord = '';
+        this.previousWord = '';
+        this.typed = '';
+        this.lives = 3;
+      }
+
+      create() {
+        this.wordText = this.add.text(400, 200, '', { fontSize: '32px', fill: '#0f0' }).setOrigin(0.5);
+        this.meaningText = this.add.text(400, 250, '', { fontSize: '20px', fill: '#ccc' }).setOrigin(0.5);
+        this.inputText = this.add.text(400, 300, '', { fontSize: '24px', fill: '#fff' }).setOrigin(0.5);
+        this.scoreText = this.add.text(20, 20, 'スコア: 0', { fontSize: '18px', fill: '#0ff' });
+        this.timerText = this.add.text(650, 20, '残り時間: 30秒', { fontSize: '18px', fill: '#ff0' });
+        this.livesText = this.add.text(20, 50, 'ライフ: 3', { fontSize: '18px', fill: '#f88' });
+
+        // 強制終了ボタン：右下に配置
+        this.endText = this.add.text(790, 580, '終了', {
+          fontSize: '24px',
+          fill: '#fff',
+          backgroundColor: '#f00',
+          padding: {
+            x: 10,
+            y: 5
+          }
+        })
+          .setOrigin(1, 1)
+          .setInteractive();
+
+        // ボタン押下でフェードアウト後タイトルへ戻る
+        this.endText.on('pointerdown', () => {
+          this.endText.disableInteractive();
+          this.cameras.main.once('camerafadeoutcomplete', () => {
+            this.scene.start('TitleScene');
+          });
+          this.cameras.main.fade(500, 0, 0, 0);
+        });
+
+        // タイマー（1秒ごと更新）
+        this.time.addEvent({ delay: 1000, callback: this.updateTimer, callbackScope: this, loop: true });
+
+        // キー入力
+        this.input.keyboard.on('keydown', this.handleInput, this);
+
+        // 最初の単語を設定
+        this.newWord();
+      }
+
+      newWord() {
+        let pair;
+        do {
+          pair = Phaser.Utils.Array.GetRandom(wordPairs);
+        } while (pair.word === this.previousWord);
+        this.previousWord = pair.word;
+        this.currentWord = pair.word;
+        this.meaningText.setText(`意味: ${pair.meaning}`);
+        this.wordText.setText(this.currentWord);
+        this.typed = '';
+        this.inputText.setText('');
+      }
+
+      handleInput(event) {
+        if (this.timeLeft <= 0) return;
+
+        const key = event.key;
+        if (key === 'Shift' || key === 'Control' || key === 'Alt' || key === 'Meta') return;
+
+        if (key === 'Backspace') {
+          this.typed = this.typed.slice(0, -1);
+          this.inputText.setText(this.typed);
+          return;
+        }
+        if (key === 'Enter') return;
+
+        this.typed += key.toLowerCase();
+        this.inputText.setText(this.typed);
+
+        if (this.currentWord.startsWith(this.typed)) {
+          if (this.typed === this.currentWord) {
+            this.score++;
+            this.scoreText.setText(`スコア: ${this.score}`);
+            this.newWord();
+          }
+        } else {
+          this.lives--;
+          this.livesText.setText(`ライフ: ${this.lives}`);
+          if (this.lives <= 0) {
+            this.scene.start('ResultScene', { score: this.score });
+            return;
+          }
+          this.newWord();
+        }
+      }
+
+      updateTimer() {
+        this.timeLeft--;
+        this.timerText.setText(`残り時間: ${this.timeLeft}秒`);
+        if (this.timeLeft <= 0) {
+          this.scene.start('ResultScene', { score: this.score });
+        }
+      }
+    }
+
+    // リザルトシーン
+    class ResultScene extends Phaser.Scene {
+      constructor() {
+        super('ResultScene');
+      }
+
+      init(data) {
+        this.finalScore = data.score;
+      }
+
+      create() {
+        this.add.text(400, 200, 'ゲーム終了！', { fontSize: '32px', fill: '#f00' }).setOrigin(0.5);
+        this.add.text(400, 250, `あなたのスコアは ${this.finalScore} 点です！`, { fontSize: '24px', fill: '#fff' }).setOrigin(0.5);
+
+        const best = localStorage.getItem('bestScore') || 0;
+        if (this.finalScore > best) {
+          localStorage.setItem('bestScore', this.finalScore);
+          this.add.text(400, 300, '新記録！', { fontSize: '18px', fill: '#0ff' }).setOrigin(0.5);
+          this.add.text(400, 330, `ベストスコア: ${this.finalScore}`, { fontSize: '18px', fill: '#ff0' }).setOrigin(0.5);
+        } else {
+          this.add.text(400, 300, `ベストスコア: ${best}`, { fontSize: '18px', fill: '#ff0' }).setOrigin(0.5);
+        }
+
+        const restartText = this.add.text(400, 350, '▶︎ もう一度プレイ', { fontSize: '20px', fill: '#0f0' })
+          .setOrigin(0.5)
+          .setInteractive();
+
+        restartText.on('pointerdown', () => {
+          this.scene.start('GameScene');
+        });
+      }
+    }
+
+    // 読み込み後、ゲームスタート
+    window.onload = async () => {
+      await loadWords();
+      const config = {
+        type: Phaser.AUTO,
+        width: 800,
+        height: 600,
+        parent: 'gameContainer',
+        backgroundColor: '#111',
+        scene: [TitleScene, GameScene, ResultScene]
+      };
+      new Phaser.Game(config);
+    };
+  </script>
+</body>
+</html>
+=======
  <!DOCTYPE html>
  <html>
  <head>
@@ -53,3 +260,4 @@
        init() {
          this.score = 0;
          this.timeLeft = 30;
+>>>>>>> main
