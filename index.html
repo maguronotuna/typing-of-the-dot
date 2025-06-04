@@ -206,7 +206,13 @@ class ResultScene extends Phaser.Scene {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, score: this.finalScore })
-      });
+      }).catch(() => {});
+
+      const localRanking = JSON.parse(localStorage.getItem('ranking') || '[]');
+      localRanking.push({ name, score: this.finalScore });
+      localRanking.sort((a, b) => b.score - a.score);
+      localRanking.splice(10);
+      localStorage.setItem('ranking', JSON.stringify(localRanking));
     }
 
     const restartText = this.add.text(440, 385, '▶︎ もう一度プレイ', { fontSize: '20px', fill: '#0f0' })
@@ -233,6 +239,15 @@ class RankingScene extends Phaser.Scene {
       }
     } catch (e) {
       console.error('Failed to load ranking', e);
+    }
+
+    if (ranking.length === 0) {
+      const local = localStorage.getItem('ranking');
+      if (local) {
+        try {
+          ranking = JSON.parse(local);
+        } catch {}
+      }
     }
 
     this.add
