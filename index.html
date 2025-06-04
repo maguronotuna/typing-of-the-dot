@@ -27,33 +27,45 @@ class TitleScene extends Phaser.Scene {
     this.load.image('zombieLogo', 'logo.png');
   }
   create() {
-      const { width, height } = this.scale;
+    const { width, height } = this.scale;
 
-      this.add
-        .image(width / 2, height * 0.35, 'zombieLogo')
-        .setScale(0.5);
+    this.add
+      .image(width / 2, height * 0.35, 'zombieLogo')
+      .setScale(0.5);
 
-      const best = parseInt(localStorage.getItem('bestScore')) || 0;
-      this.add
-        .text(width / 2, height - 120, `ベストスコア: ${best}`, {
-          fontSize: '18px',
-          fill: '#ff0'
-        })
-        .setOrigin(0.5);
+    const best = parseInt(localStorage.getItem('bestScore')) || 0;
+    this.add
+      .text(width / 2, height - 120, `ベストスコア: ${best}`, {
+        fontSize: '18px',
+        fill: '#ff0'
+      })
+      .setOrigin(0.5);
 
-      const startText = this.add
-        .text(width / 2, height - 70, '▶︎ ゲーム開始', {
-          fontSize: '24px',
-          fill: '#0ff'
-        })
-        .setOrigin(0.5)
-        .setInteractive();
+    const startText = this.add
+      .text(width / 2, height - 70, '▶︎ ゲーム開始', {
+        fontSize: '24px',
+        fill: '#0ff'
+      })
+      .setOrigin(0.5)
+      .setInteractive();
 
-        startText.on('pointerdown', () => {
-          this.scene.start('GameScene');
-        });
-      }
-    }
+    startText.on('pointerdown', () => {
+      this.scene.start('GameScene');
+    });
+
+    const rankingText = this.add
+      .text(width - 20, height - 20, 'ランキング', {
+        fontSize: '18px',
+        fill: '#0ff'
+      })
+      .setOrigin(1, 1)
+      .setInteractive();
+
+    rankingText.on('pointerdown', () => {
+      this.scene.start('RankingScene');
+    });
+  }
+}
 
     // ゲームシーン
     class GameScene extends Phaser.Scene {
@@ -166,37 +178,73 @@ class TitleScene extends Phaser.Scene {
     }
 
     // リザルトシーン
-    class ResultScene extends Phaser.Scene {
-      constructor() {
-        super('ResultScene');
+class ResultScene extends Phaser.Scene {
+  constructor() {
+    super('ResultScene');
+  }
+
+  init(data) {
+    this.finalScore = data.score;
+  }
+
+  create() {
+    this.add.text(440, 220, 'ゲーム終了！', { fontSize: '32px', fill: '#f00' }).setOrigin(0.5);
+    this.add.text(440, 275, `あなたのスコアは ${this.finalScore} 点です！`, { fontSize: '24px', fill: '#fff' }).setOrigin(0.5);
+
+    const best = parseInt(localStorage.getItem('bestScore')) || 0;
+    if (this.finalScore > best) {
+      localStorage.setItem('bestScore', this.finalScore);
+      this.add.text(440, 330, '新記録！', { fontSize: '18px', fill: '#0ff' }).setOrigin(0.5);
+      this.add.text(440, 363, `ベストスコア: ${this.finalScore}`, { fontSize: '18px', fill: '#ff0' }).setOrigin(0.5);
+
+      const name = prompt('名前を入力してください');
+      if (name) {
+        let ranking = JSON.parse(localStorage.getItem('ranking')) || [];
+        ranking.push({ name, score: this.finalScore });
+        ranking.sort((a, b) => b.score - a.score);
+        ranking = ranking.slice(0, 10);
+        localStorage.setItem('ranking', JSON.stringify(ranking));
       }
-
-      init(data) {
-        this.finalScore = data.score;
-      }
-
-      create() {
-        this.add.text(440, 220, 'ゲーム終了！', { fontSize: '32px', fill: '#f00' }).setOrigin(0.5);
-        this.add.text(440, 275, `あなたのスコアは ${this.finalScore} 点です！`, { fontSize: '24px', fill: '#fff' }).setOrigin(0.5);
-
-        const best = parseInt(localStorage.getItem('bestScore')) || 0;
-        if (this.finalScore > best) {
-          localStorage.setItem('bestScore', this.finalScore);
-          this.add.text(440, 330, '新記録！', { fontSize: '18px', fill: '#0ff' }).setOrigin(0.5);
-          this.add.text(440, 363, `ベストスコア: ${this.finalScore}`, { fontSize: '18px', fill: '#ff0' }).setOrigin(0.5);
-        } else {
-          this.add.text(440, 330, `ベストスコア: ${best}`, { fontSize: '18px', fill: '#ff0' }).setOrigin(0.5);
-        }
-
-        const restartText = this.add.text(440, 385, '▶︎ もう一度プレイ', { fontSize: '20px', fill: '#0f0' })
-          .setOrigin(0.5)
-          .setInteractive();
-
-        restartText.on('pointerdown', () => {
-          this.scene.start('GameScene');
-        });
-      }
+    } else {
+      this.add.text(440, 330, `ベストスコア: ${best}`, { fontSize: '18px', fill: '#ff0' }).setOrigin(0.5);
     }
+
+    const restartText = this.add.text(440, 385, '▶︎ もう一度プレイ', { fontSize: '20px', fill: '#0f0' })
+      .setOrigin(0.5)
+      .setInteractive();
+
+    restartText.on('pointerdown', () => {
+      this.scene.start('GameScene');
+    });
+  }
+}
+
+class RankingScene extends Phaser.Scene {
+  constructor() {
+    super('RankingScene');
+  }
+
+  create() {
+    const ranking = JSON.parse(localStorage.getItem('ranking')) || [];
+
+    this.add.text(440, 60, 'ランキング', { fontSize: '32px', fill: '#0f0' }).setOrigin(0.5);
+
+    ranking.forEach((r, i) => {
+      this.add.text(440, 110 + i * 30, `${i + 1}. ${r.name} - ${r.score}`, {
+        fontSize: '20px',
+        fill: '#fff'
+      }).setOrigin(0.5);
+    });
+
+    const backText = this.add.text(440, 420, '戻る', { fontSize: '24px', fill: '#0ff' })
+      .setOrigin(0.5)
+      .setInteractive();
+
+    backText.on('pointerdown', () => {
+      this.scene.start('TitleScene');
+    });
+  }
+}
 
     // 読み込み後、ゲームスタート
     window.onload = async () => {
@@ -207,7 +255,7 @@ class TitleScene extends Phaser.Scene {
         height: 660,
         parent: 'gameContainer',
         backgroundColor: '#000',
-        scene: [TitleScene, GameScene, ResultScene]
+        scene: [TitleScene, GameScene, ResultScene, RankingScene]
       };
       new Phaser.Game(config);
     };
