@@ -76,9 +76,13 @@
           .setOrigin(1, 1)
           .setInteractive();
 
-        // ボタン押下でリザルトシーンへ
+        // ボタン押下でフェードアウト後タイトルへ戻る
         this.endText.on('pointerdown', () => {
-          this.scene.start('ResultScene', { score: this.score });
+          this.endText.disableInteractive();
+          this.cameras.main.once('camerafadeoutcomplete', () => {
+            this.scene.start('TitleScene');
+          });
+          this.cameras.main.fade(500, 0, 0, 0);
         });
 
         // タイマー（1秒ごと更新）
