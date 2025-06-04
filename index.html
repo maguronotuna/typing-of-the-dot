@@ -71,15 +71,15 @@ class TitleScene extends Phaser.Scene {
       }
 
       create() {
-        this.wordText = this.add.text(400, 200, '', { fontSize: '32px', fill: '#0f0' }).setOrigin(0.5);
-        this.meaningText = this.add.text(400, 250, '', { fontSize: '20px', fill: '#ccc' }).setOrigin(0.5);
-        this.inputText = this.add.text(400, 300, '', { fontSize: '24px', fill: '#fff' }).setOrigin(0.5);
+        this.wordText = this.add.text(440, 220, '', { fontSize: '32px', fill: '#0f0' }).setOrigin(0.5);
+        this.meaningText = this.add.text(440, 275, '', { fontSize: '20px', fill: '#ccc' }).setOrigin(0.5);
+        this.inputText = this.add.text(440, 330, '', { fontSize: '24px', fill: '#fff' }).setOrigin(0.5);
         this.scoreText = this.add.text(20, 20, 'スコア: 0', { fontSize: '18px', fill: '#0ff' });
-        this.timerText = this.add.text(650, 20, '残り時間: 30秒', { fontSize: '18px', fill: '#ff0' });
+        this.timerText = this.add.text(730, 20, '残り時間: 30秒', { fontSize: '18px', fill: '#ff0' });
         this.livesText = this.add.text(20, 50, 'ライフ: 3', { fontSize: '18px', fill: '#f88' });
 
         // 強制終了ボタン：右下に配置
-        this.endText = this.add.text(790, 580, '終了', {
+        this.endText = this.add.text(870, 640, '終了', {
           fontSize: '24px',
           fill: '#fff',
           backgroundColor: '#f00',
@@ -176,19 +176,19 @@ class TitleScene extends Phaser.Scene {
       }
 
       create() {
-        this.add.text(400, 200, 'ゲーム終了！', { fontSize: '32px', fill: '#f00' }).setOrigin(0.5);
-        this.add.text(400, 250, `あなたのスコアは ${this.finalScore} 点です！`, { fontSize: '24px', fill: '#fff' }).setOrigin(0.5);
+        this.add.text(440, 220, 'ゲーム終了！', { fontSize: '32px', fill: '#f00' }).setOrigin(0.5);
+        this.add.text(440, 275, `あなたのスコアは ${this.finalScore} 点です！`, { fontSize: '24px', fill: '#fff' }).setOrigin(0.5);
 
         const best = parseInt(localStorage.getItem('bestScore')) || 0;
         if (this.finalScore > best) {
           localStorage.setItem('bestScore', this.finalScore);
-          this.add.text(400, 300, '新記録！', { fontSize: '18px', fill: '#0ff' }).setOrigin(0.5);
-          this.add.text(400, 330, `ベストスコア: ${this.finalScore}`, { fontSize: '18px', fill: '#ff0' }).setOrigin(0.5);
+          this.add.text(440, 330, '新記録！', { fontSize: '18px', fill: '#0ff' }).setOrigin(0.5);
+          this.add.text(440, 363, `ベストスコア: ${this.finalScore}`, { fontSize: '18px', fill: '#ff0' }).setOrigin(0.5);
         } else {
-          this.add.text(400, 300, `ベストスコア: ${best}`, { fontSize: '18px', fill: '#ff0' }).setOrigin(0.5);
+          this.add.text(440, 330, `ベストスコア: ${best}`, { fontSize: '18px', fill: '#ff0' }).setOrigin(0.5);
         }
 
-        const restartText = this.add.text(400, 350, '▶︎ もう一度プレイ', { fontSize: '20px', fill: '#0f0' })
+        const restartText = this.add.text(440, 385, '▶︎ もう一度プレイ', { fontSize: '20px', fill: '#0f0' })
           .setOrigin(0.5)
           .setInteractive();
 
@@ -203,8 +203,8 @@ class TitleScene extends Phaser.Scene {
       await loadWords();
       const config = {
         type: Phaser.AUTO,
-        width: 800,
-        height: 600,
+        width: 880,
+        height: 660,
         parent: 'gameContainer',
         backgroundColor: '#111',
         scene: [TitleScene, GameScene, ResultScene]
